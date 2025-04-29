@@ -76,19 +76,17 @@ def lambda_handler(event, context):
         # FastAPIを呼び出し
         req = urllib.request.Request(url, data=json.dumps(request_payload), headers={'Content-Type': 'application/json'})
         with urllib.request.urlopen(req) as response:
-            response = json.loads(response.read())
-        
-        # レスポンスを解析
-        response_body = json.loads(response['body'].read())
+            response_body = json.loads(response.read())
+
         print("Bedrock response:", json.dumps(response_body, default=str))
-        
+
         # 応答の検証
-        if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
+        if not response_body.get('generated_text'):
             raise Exception("No response content from the model")
-        
+
         # アシスタントの応答を取得
-        assistant_response = response_body['output']['message']['content'][0]['text']
-        
+        assistant_response = response_body['generated_text']
+
         # アシスタントの応答を会話履歴に追加
         messages.append({
             "role": "assistant",
