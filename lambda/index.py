@@ -14,7 +14,7 @@ def extract_region_from_arn(arn):
     return "us-east-1"  # デフォルト値
 
 # FastAPI serverのurl
-url = "https://22ef-34-82-83-32.ngrok-free.app/"
+url = "https://22ef-34-82-83-32.ngrok-free.app/generate"
 
 
 def lambda_handler(event, context):
@@ -62,17 +62,17 @@ def lambda_handler(event, context):
         
         # invoke_model用のリクエストペイロード
         request_payload = {
-            "prompts": bedrock_messages,
+            "prompt": message,
             "maxTokens": 512,
             "do_sample": True,
             "temperature": 0.7,
-            "topP": 0.9
+            "top_p": 0.9
             }
         
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         # FastAPIを呼び出し
-        req = urllib.request.Request(url, data=json.dumps(request_payload), headers={'Content-Type': 'application/json'})
+        req = urllib.request.Request(url, data=json.dumps(request_payload).encode("utf-8"), headers={'Content-Type': 'application/json'})
         with urllib.request.urlopen(req) as response:
             response_body = json.loads(response.read())
 
