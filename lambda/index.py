@@ -1,9 +1,8 @@
 # lambda/index.py
 import json
 import os
-import boto3
 import re  # 正規表現モジュールをインポート
-from botocore.exceptions import ClientError
+import urllib.request
 
 
 # Lambda コンテキストからリージョンを抽出する関数
@@ -14,21 +13,13 @@ def extract_region_from_arn(arn):
         return match.group(1)
     return "us-east-1"  # デフォルト値
 
-# グローバル変数としてクライアントを初期化（初期値）
-bedrock_client = None
+# FastAPI serverのurl
+url = ""
 
-# モデルID
-MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
 
 def lambda_handler(event, context):
     try:
-        # コンテキストから実行リージョンを取得し、クライアントを初期化
-        global bedrock_client
-        if bedrock_client is None:
-            region = extract_region_from_arn(context.invoked_function_arn)
-            bedrock_client = boto3.client('bedrock-runtime', region_name=region)
-            print(f"Initialized Bedrock client in region: {region}")
-        
+        global url        
         print("Received event:", json.dumps(event))
         
         # Cognitoで認証されたユーザー情報を取得
@@ -43,7 +34,7 @@ def lambda_handler(event, context):
         conversation_history = body.get('conversationHistory', [])
         
         print("Processing message:", message)
-        print("Using model:", MODEL_ID)
+
         
         # 会話履歴を使用
         messages = conversation_history.copy()
@@ -82,12 +73,10 @@ def lambda_handler(event, context):
         
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
-        # invoke_model APIを呼び出し
-        response = bedrock_client.invoke_model(
-            modelId=MODEL_ID,
-            body=json.dumps(request_payload),
-            contentType="application/json"
-        )
+        # FastAPIを呼び出し
+        req = urllib.request.Request(url, data=json.dumps(request_payload), headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req) as response:
+            response = json.loads(response.read())
         
         # レスポンスを解析
         response_body = json.loads(response['body'].read())
