@@ -62,14 +62,12 @@ def lambda_handler(event, context):
         
         # invoke_model用のリクエストペイロード
         request_payload = {
-            "messages": bedrock_messages,
-            "inferenceConfig": {
-                "maxTokens": 512,
-                "stopSequences": [],
-                "temperature": 0.7,
-                "topP": 0.9
+            "prompts": bedrock_messages,
+            "maxTokens": 512,
+            "do_sample": True,
+            "temperature": 0.7,
+            "topP": 0.9
             }
-        }
         
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
