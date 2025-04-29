@@ -14,7 +14,7 @@ def extract_region_from_arn(arn):
     return "us-east-1"  # デフォルト値
 
 # FastAPI serverのurl
-url = ""
+url = "https://22ef-34-82-83-32.ngrok-free.app/"
 
 
 def lambda_handler(event, context):
